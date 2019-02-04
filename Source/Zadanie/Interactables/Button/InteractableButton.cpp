@@ -7,7 +7,6 @@
 #include "Materials/Material.h"
 #include "TimerManager.h"
 
-#include "GameFramework/PlayerController.h"
 
 AInteractableButton::AInteractableButton() 
 {

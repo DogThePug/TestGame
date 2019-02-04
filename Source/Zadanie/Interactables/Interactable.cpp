@@ -73,6 +73,11 @@ void AInteractable::ClientSetInteractee_Implementation(APawn * InteracteeToSet)
 	Interactee = InteracteeToSet;
 }
 
+USphereComponent * const AInteractable::GetInteractionSphere() const
+{
+	return InteractionSphere;
+}
+
 void AInteractable::ServerInteractPostCheck()
 {
 	// ...

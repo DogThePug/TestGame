@@ -65,7 +65,6 @@ protected:
 	// Network Setup
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty> & OutLifetimeProps) const override;
 
-
 	virtual void ClientBeginHover() override;
 	virtual void ClientEndHover() override;
 

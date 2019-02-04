@@ -41,6 +41,8 @@ public:
 
 	UFUNCTION(Client, Unreliable)
 	void ClientSetInteractee(class APawn* InteracteeToSet);
+
+	class USphereComponent* const GetInteractionSphere() const;
 protected:
 	// virtual function for children to implement interact behavior
 	virtual void ServerInteractPostCheck();
@@ -50,6 +52,10 @@ protected:
 
 	// Network Setup
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty> & OutLifetimeProps) const override;
+
+	// Pawn that interacts with us
+	UPROPERTY(Replicated)
+	class APawn* Interactee;
 private:
 	// Function that executes on server when this object is interracted upon
 	UFUNCTION(Reliable, Server, WithValidation)
@@ -59,8 +65,6 @@ private:
 	UFUNCTION(Reliable, Server, WithValidation)
 	void ServerEndInteract();
 
-	// Pawn that attemts to interact with us
-	UPROPERTY(Replicated)
-	class APawn* Interactee;
+
 	
 };

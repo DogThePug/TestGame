@@ -19,6 +19,30 @@ AInteractableLamp::AInteractableLamp()
 	PointLight->SetRelativeLocation(FVector(10.f, 0.f, 25.f));
 }
 
+void AInteractableLamp::BeginPlay()
+{
+	Super::BeginPlay();
+
+	if (Role == ROLE_Authority)
+	{
+		LightIntensity = FMath::Clamp(CurrentLightIntensity, 0.f, MaxLightIntensity);
+		OnRep_LightIntensity();
+	}
+}
+
+void AInteractableLamp::ClientBeginHover()
+{
+	if (bCanBeDirectlyInteractedWith)
+	{
+		DefaultMesh->SetVectorParameterValueOnMaterials(FName("ColorScreen"), FVector(1.f, 0.5f, 1.f));
+	}
+}
+
+void AInteractableLamp::ClientEndHover()
+{
+	DefaultMesh->SetVectorParameterValueOnMaterials(FName("ColorScreen"), FVector(1.f, 0.38f, 0.f));
+}
+
 void AInteractableLamp::ServerAddColorToBlend_Implementation(FLinearColor Color)
 {
 	if (Role == ROLE_Authority)
@@ -89,6 +113,23 @@ bool AInteractableLamp::IndirectInteract_Validate()
 }
 
 
+void AInteractableLamp::ServerSetIntencityPercent_Implementation(float Percent)
+{
+	if (Role == ROLE_Authority)
+	{
+		CurrentLightIntensity = FMath::Clamp(MaxLightIntensity*Percent, 0.f, MaxLightIntensity);
+		if (bLightOn)
+		{
+			LightIntensity = CurrentLightIntensity;
+			OnRep_LightIntensity();
+		}
+	}
+}
+
+bool AInteractableLamp::ServerSetIntencityPercent_Validate(float Percent)
+{
+	return true;
+}
 bool AInteractableLamp::IsLightOn() const
 {
 	return bLightOn;
@@ -105,7 +146,7 @@ void AInteractableLamp::ServerInteractPostCheck()
 
 void AInteractableLamp::SwitchLampState()
 {
-	LightIntensity = bLightOn ? 0.f : 700.f;
+	LightIntensity = bLightOn ? 0.f : CurrentLightIntensity;
 	bLightOn = !bLightOn;
 	OnStateChanged.Broadcast();
 	OnRep_LightIntensity();
@@ -126,6 +167,6 @@ void AInteractableLamp::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(AInteractableLamp, LightIntensity);
-	DOREPLIFETIME(AInteractableLamp, LightColor)
+	DOREPLIFETIME(AInteractableLamp, LightColor);
 }
 

@@ -9,6 +9,7 @@
 #include "Engine/World.h"
 #include "TimerManager.h"
 #include "../Interactables/Interactable.h"
+#include "Components/SphereComponent.h"
 
 #include "UnrealNetwork.h"
 
@@ -33,27 +34,6 @@ APlayerCharacter::APlayerCharacter()
 	StaticMesh->SetRelativeLocation(FVector(0.f, 0.f, 50.f));
 }
 
-void APlayerCharacter::PauseHoverTimer()
-{
-	GetWorldTimerManager().PauseTimer(HoverTimerHandle);
-}
-
-void APlayerCharacter::ContinueHoverTimer()
-{
-	GetWorldTimerManager().UnPauseTimer(HoverTimerHandle);
-}
-
-// Called when the game starts or when spawned
-void APlayerCharacter::BeginPlay()
-{
-	Super::BeginPlay();
-	
-	if (Role == ROLE_Authority)
-	{
-		GetWorldTimerManager().SetTimer(HoverTimerHandle, this, &APlayerCharacter::ClientCheckHover, 1.f/30.f, true);
-	}
-}
-
 // Called to bind functionality to input
 void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
@@ -76,18 +56,15 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	InputComponent->BindAction("Interact", IE_Released, this, &APlayerCharacter::ClientEndInteract);
 }
 
-UStaticMeshComponent * APlayerCharacter::GetStaticMesh() const
-{
-	return StaticMesh;
-}
 
-void APlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+void APlayerCharacter::BeginPlay()
 {
-	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-
-	DOREPLIFETIME(APlayerCharacter, HoverTimerHandle);
-	DOREPLIFETIME(APlayerCharacter, CurrentTarget);
-	DOREPLIFETIME(APlayerCharacter, PreviousTarget);
+	Super::BeginPlay();
+	
+	if (Role == ROLE_Authority)
+	{
+		GetWorldTimerManager().SetTimer(HoverTimerHandle, this, &APlayerCharacter::ClientCheckHover, 1.f/30.f, true);
+	}
 }
 
 void APlayerCharacter::Tick(float DeltaTime)
@@ -97,13 +74,14 @@ void APlayerCharacter::Tick(float DeltaTime)
 	{
 		if (CurrentTarget)
 		{
-				if ((CurrentTarget->GetActorLocation() - GetActorLocation()).Size() > 200.f)
-				{
-					ClientEndInteract();
-				}
+			if ((CurrentTarget->GetInteractionSphere()->GetComponentLocation() - GetActorLocation()).Size() > 200.f)
+			{
+				ClientEndInteract();
+			}
 		}
 	}
 }
+
 
 void APlayerCharacter::MoveForward(float Val)
 {
@@ -160,8 +138,10 @@ void APlayerCharacter::ClientEndInteract_Implementation()
 
 void APlayerCharacter::ClientCheckHover_Implementation()
 {
+	// Checking through server if we have any targets in front of us
 	ServerBeginHover();
 
+	// If the current target is the one we had before, tell it that we are still hovering over it
 	if (CurrentTarget == PreviousTarget)
 	{
 		if (CurrentTarget)
@@ -171,11 +151,14 @@ void APlayerCharacter::ClientCheckHover_Implementation()
 	}
 	else
 	{
+		// If our target was not the previous one, tell the previous one that we hover over it no longer
 		if (PreviousTarget)
 		{
 			PreviousTarget->ClientEndHover();
 		}
 	}
+
+	// Set the previous target to the current one to check it on the next cycle
 	PreviousTarget = CurrentTarget;
 }
 
@@ -201,12 +184,11 @@ void APlayerCharacter::ServerBeginHover_Implementation()
 	FHitResult HitResult;
 	GetWorld()->SweepSingleByChannel(HitResult, StartTrace, EndTrace, FQuat::Identity, ECollisionChannel::ECC_WorldDynamic, FCollisionShape::MakeSphere(20.f), TraceParams);
 
+	// If we found an interactable, set it as a current target
 	AInteractable* PossibleInteractable = Cast<AInteractable>(HitResult.Actor);
 	if (PossibleInteractable)
 	{
 		CurrentTarget = PossibleInteractable;
-	
-		
 	}
 	else
 	{
@@ -222,36 +204,10 @@ bool APlayerCharacter::ServerBeginHover_Validate()
 
 void APlayerCharacter::ServerBeginInteract_Implementation(APawn* Interactee)
 {
-	//// Return if we have no controller
-	//if (!Controller) 
-	//{
-	//	return;
-	//}
-
-	//// Initiating local variables to perform line trace
-	//FVector CamLoc;
-	//FRotator CamRot;
-	//Controller->GetPlayerViewPoint(CamLoc, CamRot);
-	//const FVector StartTrace = CamLoc;
-	//const FVector ShootDir = CamRot.Vector();
-	//const FVector EndTrace = StartTrace + ShootDir * 100;
-
-	//// Perform trace to retrieve hit info
-	//FCollisionQueryParams TraceParams(FName(TEXT("InteractionTrace")), true, this);
-
-	//TArray<FHitResult> HitResults;
-	//GetWorld()->SweepMultiByChannel(HitResults, StartTrace, EndTrace, FQuat::Identity, ECollisionChannel::ECC_WorldDynamic, FCollisionShape::MakeSphere(20.f), TraceParams);
-
-	//for (auto Hit : HitResults)
-	//{
-	//	AInteractable* PossibleInteractable = Cast<AInteractable>(Hit.Actor);
-	//	if (PossibleInteractable)
-	//	{
-	//		PossibleInteractable->Interact();
-	//		break;
-	//	}
-	//}
-
+	/*
+	* Telling our current target to start start interaction, sending the interactee as a reference for further actions
+	* and setting both interactee and interactable to the state of interaction
+	*/
 	if (CurrentTarget)
 	{
 		APlayerCharacter* InteracteeCharacter = Cast<APlayerCharacter>(Interactee);
@@ -273,6 +229,7 @@ bool APlayerCharacter::ServerBeginInteract_Validate(APawn* Interactee)
 
 void APlayerCharacter::ServerEndInteract_Implementation(APawn* Interactee)
 {
+	// Telling our current target that we no longer interact with it, reseting both interactee and interactable to the initial state
 	if (CurrentTarget)
 	{
 		APlayerCharacter* InteracteeCharacter = Cast<APlayerCharacter>(Interactee);
@@ -290,4 +247,28 @@ void APlayerCharacter::ServerEndInteract_Implementation(APawn* Interactee)
 bool APlayerCharacter::ServerEndInteract_Validate(APawn* Interactee)
 {
 	return true;
+}
+
+void APlayerCharacter::PauseHoverTimer()
+{
+	GetWorldTimerManager().PauseTimer(HoverTimerHandle);
+}
+
+void APlayerCharacter::ContinueHoverTimer()
+{
+	GetWorldTimerManager().UnPauseTimer(HoverTimerHandle);
+}
+
+UStaticMeshComponent * APlayerCharacter::GetStaticMesh() const
+{
+	return StaticMesh;
+}
+
+void APlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(APlayerCharacter, HoverTimerHandle);
+	DOREPLIFETIME(APlayerCharacter, CurrentTarget);
+	DOREPLIFETIME(APlayerCharacter, PreviousTarget);
 }

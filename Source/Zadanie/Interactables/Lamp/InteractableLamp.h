@@ -23,6 +23,13 @@ public:
 	// Constructor
 	AInteractableLamp();
 
+	// Initiate starting state of the lamp
+	virtual void BeginPlay() override;
+
+	// 
+	virtual void ClientBeginHover();
+	virtual void ClientEndHover();
+
 	// Change color of the light
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerSetLightColor(FLinearColor Color);
@@ -31,6 +38,7 @@ public:
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerAddColorToBlend(FLinearColor Color);
 
+	// Remove color from the array
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerRemoveColorFromBlend(FLinearColor Color);
 
@@ -38,9 +46,14 @@ public:
 	UFUNCTION(Server, Reliable, WithValidation)
 	void IndirectInteract();
 
+	// Set Intencity (Brightness) of the lamp by %
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerSetIntencityPercent(float Percent);
+
 	// Get the state of light
 	bool IsLightOn() const;
 
+	
 	FOnLightStateChangeSignature OnStateChanged;
 protected:
 	// Implementing Interaction Functionality
@@ -54,9 +67,17 @@ protected:
 
 private: // Private variables
 
-	// Replicated light intensity function
+	// Max Light Intencity
+	UPROPERTY(EditAnywhere, Category = "FunctionalitySetup")
+	float MaxLightIntensity = 700.f;
+
+	// Current light intencity, regardless of the state
+	UPROPERTY(Replicated, EditAnywhere, Category = "FunctionalitySetup")
+	float CurrentLightIntensity = 700.f;
+
+	// Current light intensity, including the state on/off
 	UPROPERTY(ReplicatedUsing = OnRep_LightIntensity)
-	float LightIntensity = 700.f;
+	float LightIntensity;
 
 	// Is the light on or not
 	bool bLightOn = true;

@@ -22,13 +22,16 @@ public:
 	UPROPERTY(Replicated)
 	bool bIsInteracting = false;
 
+	// Pausing hover timer
 	void PauseHoverTimer();
 
+	// Unpausing hover timer
 	void ContinueHoverTimer();
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	// Timer that sends sweeps to find interactables
 	UPROPERTY(Replicated)
 	struct FTimerHandle HoverTimerHandle;
 
@@ -40,7 +43,6 @@ protected:
 	UPROPERTY(Replicated)
 	class AInteractable* PreviousTarget;
 
-	
 public:	
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
@@ -52,8 +54,10 @@ public:
 	// Network Setup
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty> & OutLifetimeProps) const override;
 
+	// Break the interaction if we are too far away from the thing we are interacting with
 	virtual void Tick(float DeltaTime) override;
 private: 
+	/// Movement Behavior Setup
 	// Handles moving forward/backward
 	UFUNCTION()
 	void MoveForward(float Val);
@@ -69,9 +73,12 @@ private:
 	UFUNCTION()
 	void JumpReleased();
 
+	/// Interaction Begavior Setup
+	// Starting the interaction on the client side in order to send self as an interactor
 	UFUNCTION(Client, Reliable)
 	void ClientBeginInteract();
 
+	// Stoping the interaction on the client side
 	UFUNCTION(Client, Reliable)
 	void ClientEndInteract();
 
@@ -83,9 +90,11 @@ private:
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerEndInteract(APawn* Interactee);
 
+	// Handles hovering
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerBeginHover();
 
+	// Tells an interactable that we had/have a focus on to change it's appearence for the client
 	UFUNCTION(Client, Reliable)
 	void ClientCheckHover();
 
