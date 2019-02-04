@@ -1,7 +1,7 @@
 // Made by Vladyslav Kulinych.
 
 #include "ButtonColorChanger.h"
-#include "InteractableLamp.h"
+#include "../Lamp/InteractableLamp.h"
 #include "UnrealNetwork.h"
 
 

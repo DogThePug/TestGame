@@ -1,7 +1,7 @@
 // Made by Vladyslav Kulinych.
 
 #include "PuzzleRemoteDoor.h"
-#include "../Interactables/InteractableLamp.h"
+#include "../Interactables/Lamp/InteractableLamp.h"
 #include "UnrealNetwork.h"
 #include "Components/StaticMeshComponent.h"
 

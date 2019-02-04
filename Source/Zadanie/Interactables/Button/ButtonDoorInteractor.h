@@ -3,24 +3,28 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Interactables/InteractableButton.h"
-#include "ButtonLampInteractor.generated.h"
+#include "InteractableButton.h"
+#include "ButtonDoorInteractor.generated.h"
 
 /**
- * Button that indirectly interacts (Turns on/off) with lamp(s)
+ * Button to interact with door. Opens/Closes it.
  */
 UCLASS()
-class ZADANIE_API AButtonLampInteractor : public AInteractableButton
+class ZADANIE_API AButtonDoorInteractor : public AInteractableButton
 {
 	GENERATED_BODY()
-protected:
-	// Array of lamps that we interract with upon toggling
+public:
+	AButtonDoorInteractor();
+
+private:
+	// Door which this button is going to close/open
 	UPROPERTY(Replicated, Category = "FunctionalitySetup", EditAnywhere, meta = (BlueprintProtected = "true"))
-	TArray<class AInteractableLamp*> AffectedLamps;
+	class ARemoteDoor* AffectedDoor;
 
 	// Cycling through the lamps and changing their color
 	virtual void ButtonEffectOnToggle() override;
 
 	// Network Setup
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty> & OutLifetimeProps) const override;
+
 };
