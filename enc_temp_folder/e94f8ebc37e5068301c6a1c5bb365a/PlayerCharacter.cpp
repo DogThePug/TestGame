@@ -18,8 +18,8 @@
 // Sets default values
 APlayerCharacter::APlayerCharacter()
 {
- 	// Enabling tick
-	PrimaryActorTick.bCanEverTick = true;
+ 	// Disabling tick
+	PrimaryActorTick.bCanEverTick = false;
 
 	// Replication
 	bReplicates = true;
@@ -33,16 +33,6 @@ APlayerCharacter::APlayerCharacter()
 	StaticMesh->SetRelativeLocation(FVector(0.f, 0.f, 50.f));
 }
 
-void APlayerCharacter::PauseHoverTimer()
-{
-	GetWorldTimerManager().PauseTimer(HoverTimerHandle);
-}
-
-void APlayerCharacter::ContinueHoverTimer()
-{
-	GetWorldTimerManager().UnPauseTimer(HoverTimerHandle);
-}
-
 // Called when the game starts or when spawned
 void APlayerCharacter::BeginPlay()
 {
@@ -50,7 +40,7 @@ void APlayerCharacter::BeginPlay()
 	
 	if (Role == ROLE_Authority)
 	{
-		GetWorldTimerManager().SetTimer(HoverTimerHandle, this, &APlayerCharacter::ClientCheckHover, 1.f/30.f, true);
+		GetWorldTimerManager().SetTimer(TimerHandle, this, &APlayerCharacter::ServerBeginHover, 1.f/10.f, true);
 	}
 }
 
@@ -72,8 +62,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	InputComponent->BindAction("Jump", IE_Released, this, &APlayerCharacter::JumpReleased);
 
 	//Binding interaction
-	InputComponent->BindAction("Interact", IE_Pressed, this, &APlayerCharacter::ClientBeginInteract);
-	InputComponent->BindAction("Interact", IE_Released, this, &APlayerCharacter::ClientEndInteract);
+	InputComponent->BindAction("Interact", IE_Released, this, &APlayerCharacter::TryInterract);
 }
 
 UStaticMeshComponent * APlayerCharacter::GetStaticMesh() const
@@ -85,24 +74,9 @@ void APlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME(APlayerCharacter, HoverTimerHandle);
+	DOREPLIFETIME(APlayerCharacter, TimerHandle);
 	DOREPLIFETIME(APlayerCharacter, CurrentTarget);
 	DOREPLIFETIME(APlayerCharacter, PreviousTarget);
-}
-
-void APlayerCharacter::Tick(float DeltaTime)
-{
-	// Check the range between us and currently interacted target. If we are too far away, end interaction
-	if (bIsInteracting)
-	{
-		if (CurrentTarget)
-		{
-				if ((CurrentTarget->GetActorLocation() - GetActorLocation()).Size() > 200.f)
-				{
-					ClientEndInteract();
-				}
-		}
-	}
 }
 
 void APlayerCharacter::MoveForward(float Val)
@@ -147,36 +121,9 @@ void APlayerCharacter::JumpReleased()
 	bPressedJump = false;
 }
 
-void APlayerCharacter::ClientBeginInteract_Implementation()
+void APlayerCharacter::DoWeHover_Implementation()
 {
-	ServerBeginInteract(this);
-}
-
-void APlayerCharacter::ClientEndInteract_Implementation()
-{
-	ServerEndInteract(this);
-}
-
-
-void APlayerCharacter::ClientCheckHover_Implementation()
-{
-	ServerBeginHover();
-
-	if (CurrentTarget == PreviousTarget)
-	{
-		if (CurrentTarget)
-		{
-			CurrentTarget->ClientBeginHover();
-		}
-	}
-	else
-	{
-		if (PreviousTarget)
-		{
-			PreviousTarget->ClientEndHover();
-		}
-	}
-	PreviousTarget = CurrentTarget;
+	
 }
 
 void APlayerCharacter::ServerBeginHover_Implementation()
@@ -205,12 +152,27 @@ void APlayerCharacter::ServerBeginHover_Implementation()
 	if (PossibleInteractable)
 	{
 		CurrentTarget = PossibleInteractable;
-	
-		
+		if (CurrentTarget == PreviousTarget)
+		{
+			CurrentTarget->ClientBeginHover();
+		}
+		else
+		{
+			if (PreviousTarget)
+			{
+				PreviousTarget->ClientEndHover();
+			}
+		}
+		PreviousTarget = CurrentTarget;
 	}
 	else
 	{
 		CurrentTarget = nullptr;
+
+		if (PreviousTarget)
+		{
+			PreviousTarget->ClientEndHover();
+		}
 	}
 }
 
@@ -219,8 +181,7 @@ bool APlayerCharacter::ServerBeginHover_Validate()
 	return true;
 }
 
-
-void APlayerCharacter::ServerBeginInteract_Implementation(APawn* Interactee)
+void APlayerCharacter::TryInterract_Implementation()
 {
 	//// Return if we have no controller
 	//if (!Controller) 
@@ -254,40 +215,13 @@ void APlayerCharacter::ServerBeginInteract_Implementation(APawn* Interactee)
 
 	if (CurrentTarget)
 	{
-		APlayerCharacter* InteracteeCharacter = Cast<APlayerCharacter>(Interactee);
-		
-		if (InteracteeCharacter)
-		{
-			CurrentTarget->ClientSetInteractee(Interactee);
-			InteracteeCharacter->bIsInteracting = true;
-			InteracteeCharacter->PauseHoverTimer();
-			CurrentTarget->Interact();
-		}
+		CurrentTarget->Interact();
 	}
 }
 
-bool APlayerCharacter::ServerBeginInteract_Validate(APawn* Interactee)
+bool APlayerCharacter::TryInterract_Validate()
 {
 	return true;
 }
 
-void APlayerCharacter::ServerEndInteract_Implementation(APawn* Interactee)
-{
-	if (CurrentTarget)
-	{
-		APlayerCharacter* InteracteeCharacter = Cast<APlayerCharacter>(Interactee);
-		if (InteracteeCharacter)
-		{
-			CurrentTarget->EndInteract();
-			CurrentTarget->ClientSetInteractee(nullptr);
-			InteracteeCharacter->bIsInteracting = false;
-			InteracteeCharacter->ContinueHoverTimer();
-		}
-	}
 
-}
-
-bool APlayerCharacter::ServerEndInteract_Validate(APawn* Interactee)
-{
-	return true;
-}

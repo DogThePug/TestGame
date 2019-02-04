@@ -18,20 +18,12 @@ protected:
 	AInteractableButton();
 
 	// Material that is applied to the mesh when it is toggled/activated
-	UPROPERTY(Category = "Materials", VisibleAnywhere, BlueprintReadOnly, meta = (BlueprintProtected = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BlueprintProtected = "true"))
 	class UMaterial* ToggledMaterial;
 
 	// Material that is applied to the mesh when it is untoggled/not activated
-	UPROPERTY(Category = "Materials", VisibleAnywhere, BlueprintReadOnly, meta = (BlueprintProtected = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BlueprintProtected = "true"))
 	class UMaterial* UntoggledMaterial;
-
-	// Material that is applied to the root mesh when it is hovered over
-	UPROPERTY(Category = "Materials", VisibleAnywhere, BlueprintReadOnly, meta = (BlueprintProtected = "true"))
-	class UMaterial* HoveredMaterial;
-
-	// Material that is applied to the root mesh when it is unhovered over
-	UPROPERTY(Category = "Materials", VisibleAnywhere, BlueprintReadOnly, meta = (BlueprintProtected = "true"))
-	class UMaterial* UnhoveredMaterial;
 
 	// Button
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BlueprintProtected = "true"))
@@ -48,9 +40,11 @@ protected:
 	UPROPERTY(Replicated, Category = "FunctionalitySetup", EditAnywhere, meta = (BlueprintProtected = "true"))
 	bool bCanBeToggledOff = true;
 
+
 	// Can we check this button, or does it uncheck by itself
 	UPROPERTY(Replicated, EditAnywhere, Category = "FunctionalitySetup")
 	bool bIsCheckable = true;
+
 
 	// Array of buttons to deactivate when we activate this one. Sends invitations to them, ensuring that when they are interacted with, this button gets untoggled
 	UPROPERTY(Replicated, Category = "FunctionalitySetup", EditAnywhere, meta = (BlueprintProtected = "true"))
@@ -64,10 +58,6 @@ protected:
 
 	// Network Setup
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty> & OutLifetimeProps) const override;
-
-
-	virtual void ClientBeginHover() override;
-	virtual void ClientEndHover() override;
 
 public:
 	// Implementing Interaction Functionality

@@ -7,8 +7,6 @@
 #include "Materials/Material.h"
 #include "TimerManager.h"
 
-#include "GameFramework/PlayerController.h"
-
 AInteractableButton::AInteractableButton() 
 {
 	// Finding materials
@@ -18,19 +16,15 @@ AInteractableButton::AInteractableButton()
 	static ConstructorHelpers::FObjectFinder<UMaterialInstance> ToggledMaterialAsset(TEXT("/Game/Materials/M_Metal_Gold_Inst"));
 	ToggledMaterial = (UMaterial*)(ToggledMaterialAsset.Object);
 
-	static ConstructorHelpers::FObjectFinder<UMaterial> HoveredMaterialAsset(TEXT("/Game/Materials/M_MaterialSphere_2"));
-	HoveredMaterial = HoveredMaterialAsset.Object;
-
-	static ConstructorHelpers::FObjectFinder<UMaterialInstance> UnhoveredMaterialAsset(TEXT("/Game/Materials/M_Metal_BrushedSteel_Inst"));
-	UnhoveredMaterial = (UMaterial*)UnhoveredMaterialAsset.Object;
+	static ConstructorHelpers::FObjectFinder<UMaterial> MaterialAsset(TEXT("/Game/Materials/M_MaterialSphere_2"));
 
 	// Set default mesh 
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("/Game/Meshes/SM_DeathPlane_01"));
 	DefaultMesh->SetStaticMesh(MeshAsset.Object);
 
-	if (UnhoveredMaterial)
+	if (MaterialAsset.Object)
 	{
-		DefaultMesh->SetMaterial(0, UnhoveredMaterial);
+		DefaultMesh->SetMaterial(0, MaterialAsset.Object);
 	}
 
 	// Set button mesh
@@ -166,14 +160,4 @@ void AInteractableButton::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 	DOREPLIFETIME(AInteractableButton, bIsToggled);
 	DOREPLIFETIME(AInteractableButton, TiedButtonsArray);
 	DOREPLIFETIME(AInteractableButton, bIsCheckable);
-}
-
-void AInteractableButton::ClientBeginHover()
-{
-	DefaultMesh->SetMaterial(0, HoveredMaterial);
-}
-
-void AInteractableButton::ClientEndHover()
-{
-	DefaultMesh->SetMaterial(0, UnhoveredMaterial);
 }

@@ -52,10 +52,6 @@ bool ARemoteDoor::ServerInitiateStateChange_Validate()
 {
 	return true;
 }
-UStaticMeshComponent * ARemoteDoor::GetDoorMesh() const
-{
-	return DoorMesh;
-}
 // Called when the game starts or when spawned
 void ARemoteDoor::BeginPlay()
 {

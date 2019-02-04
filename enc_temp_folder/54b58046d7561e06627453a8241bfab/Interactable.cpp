@@ -5,7 +5,6 @@
 #include "Components/SphereComponent.h"
 #include "UnrealNetwork.h"
 #include "ConstructorHelpers.h"
-#include "../Player/PlayerCharacter.h"
 
 // Set default values
 AInteractable::AInteractable()
@@ -37,20 +36,9 @@ void AInteractable::Interact()
 	ServerInteract();
 }
 
-void AInteractable::EndInteract()
-{
-	// Ask a server to end interaction
-	ServerEndInteract();
-}
-
 void AInteractable::ClientBeginHover_Implementation()
 {
-
-}
-
-void AInteractable::ClientEndHover_Implementation()
-{
-	
+	UE_LOG(LogTemp, Warning, TEXT("I am hovered longer hovered"));
 }
 
 bool AInteractable::ServerInteract_Validate()
@@ -68,17 +56,12 @@ void AInteractable::ServerInteract_Implementation()
 }
 
 
-void AInteractable::ClientSetInteractee_Implementation(APawn * InteracteeToSet)
+void AInteractable::ClientEndHover_Implementation()
 {
-	Interactee = InteracteeToSet;
+	UE_LOG(LogTemp, Warning, TEXT("I am no longer hovered"));
 }
 
 void AInteractable::ServerInteractPostCheck()
-{
-	// ...
-}
-
-void AInteractable::ServerEndInteractPostCheck()
 {
 	// ...
 }
@@ -87,21 +70,7 @@ void AInteractable::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLif
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME(AInteractable, Interactee);
+	// ...
 }
-
-void AInteractable::ServerEndInteract_Implementation()
-{
-	if (Role == ROLE_Authority)
-	{
-		ServerEndInteractPostCheck();
-	}
-}
-
-bool AInteractable::ServerEndInteract_Validate()
-{
-	return true;
-}
-
 
 

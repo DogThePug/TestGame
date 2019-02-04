@@ -18,29 +18,19 @@ public:
 	// Sets default values for this character's properties
 	APlayerCharacter();
 
-	// Are we in the process of interacting with something
-	UPROPERTY(Replicated)
-	bool bIsInteracting = false;
-
-	void PauseHoverTimer();
-
-	void ContinueHoverTimer();
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 	UPROPERTY(Replicated)
-	struct FTimerHandle HoverTimerHandle;
+	struct FTimerHandle TimerHandle;
 
-	// Current target that we are focused on
 	UPROPERTY(Replicated)
 	class AInteractable* CurrentTarget;
 
-	// Target from a previous frame
 	UPROPERTY(Replicated)
 	class AInteractable* PreviousTarget;
 
-	
 public:	
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
@@ -51,8 +41,6 @@ public:
 
 	// Network Setup
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty> & OutLifetimeProps) const override;
-
-	virtual void Tick(float DeltaTime) override;
 private: 
 	// Handles moving forward/backward
 	UFUNCTION()
@@ -69,24 +57,13 @@ private:
 	UFUNCTION()
 	void JumpReleased();
 
-	UFUNCTION(Client, Reliable)
-	void ClientBeginInteract();
-
-	UFUNCTION(Client, Reliable)
-	void ClientEndInteract();
-
 	// Engages interacting behavior from server
 	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerBeginInteract(APawn* Interactee);
-
-	// Engages interacting behavior from server
-	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerEndInteract(APawn* Interactee);
+	void TryInterract();
 
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerBeginHover();
 
-	UFUNCTION(Client, Reliable)
-	void ClientCheckHover();
-
+	UFUNCTION(Client, Unreliable)
+	void DoWeHover();
 };

@@ -23,8 +23,6 @@ public:
 	// Function to initiate door opening/closing
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerInitiateStateChange();
-
-	class UStaticMeshComponent* GetDoorMesh() const;
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

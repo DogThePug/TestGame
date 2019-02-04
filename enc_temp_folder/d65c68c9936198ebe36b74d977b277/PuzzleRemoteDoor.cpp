@@ -3,7 +3,6 @@
 #include "PuzzleRemoteDoor.h"
 #include "../Interactables/InteractableLamp.h"
 #include "UnrealNetwork.h"
-#include "Components/StaticMeshComponent.h"
 
 void APuzzleRemoteDoor::BeginPlay()
 {
@@ -34,19 +33,13 @@ void APuzzleRemoteDoor::CheckConditionsMet()
 				// stop checking if the light on atleast one of the lamps is on 
 				if (Lamp->IsLightOn()) return;
 			}
-
-			if (!bIsOpen)
-			{
-				GetDoorMesh()->SetRelativeLocation(FVector(0.f, 0.f, 0.f));
-			}
-			
 		}
 	}
 
 	// Open the door
 	if (!bIsOpen)
 	{
-		GetDoorMesh()->SetRelativeLocation(FVector(0.f, SlidingDistance, 0.f));
+		ServerInitiateStateChange();
 	}
 }
 
