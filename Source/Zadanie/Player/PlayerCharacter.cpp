@@ -10,6 +10,7 @@
 #include "TimerManager.h"
 #include "../Interactables/Interactable.h"
 #include "Components/SphereComponent.h"
+#include "../Projectile/Projectile.h"
 
 #include "UnrealNetwork.h"
 
@@ -28,10 +29,10 @@ APlayerCharacter::APlayerCharacter()
 	// Seting and configuring static mesh
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("/Game/Meshes/SM_MaterialSphere"));
 
-	StaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(FName("Mesh"));
-	StaticMesh->SetupAttachment(RootComponent);
-	StaticMesh->SetStaticMesh(MeshAsset.Object);
-	StaticMesh->SetRelativeLocation(FVector(0.f, 0.f, 50.f));
+	DefaultMesh = CreateDefaultSubobject<UStaticMeshComponent>(FName("Mesh"));
+	DefaultMesh->SetupAttachment(RootComponent);
+	DefaultMesh->SetStaticMesh(MeshAsset.Object);
+	DefaultMesh->SetRelativeLocation(FVector(0.f, 0.f, 50.f));
 }
 
 // Called to bind functionality to input
@@ -54,6 +55,10 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	//Binding interaction
 	InputComponent->BindAction("Interact", IE_Pressed, this, &APlayerCharacter::ClientBeginInteract);
 	InputComponent->BindAction("Interact", IE_Released, this, &APlayerCharacter::ClientEndInteract);
+
+	// Binding shooting
+	InputComponent->BindAction("Shoot", IE_Pressed, this, &APlayerCharacter::ServerShoot);
+
 }
 
 
@@ -256,12 +261,14 @@ void APlayerCharacter::PauseHoverTimer()
 
 void APlayerCharacter::ContinueHoverTimer()
 {
+
+
 	GetWorldTimerManager().UnPauseTimer(HoverTimerHandle);
 }
 
 UStaticMeshComponent * APlayerCharacter::GetStaticMesh() const
 {
-	return StaticMesh;
+	return DefaultMesh;
 }
 
 void APlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -271,4 +278,20 @@ void APlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 	DOREPLIFETIME(APlayerCharacter, HoverTimerHandle);
 	DOREPLIFETIME(APlayerCharacter, CurrentTarget);
 	DOREPLIFETIME(APlayerCharacter, PreviousTarget);
+}
+
+void APlayerCharacter::ServerShoot_Implementation()
+{
+	FVector CamLoc;
+	FRotator CamRot;
+	Controller->GetPlayerViewPoint(CamLoc, CamRot);
+	const FVector StartTrace = CamLoc;
+	const FVector ShootDir = CamRot.Vector();
+	
+	GetWorld()->SpawnActor<AProjectile>(GetActorLocation() + ShootDir * 80.f + FVector(0.f,0.f,52.f), CamRot);
+}
+
+bool APlayerCharacter::ServerShoot_Validate()
+{
+	return true;
 }

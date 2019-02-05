@@ -15,18 +15,48 @@ class ZADANIE_API ADestructable : public AActor
 	GENERATED_BODY()
 
 
+	// Static mesh
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	class UStaticMeshComponent* DefaultMesh;
+
+	// On Death Particle effects
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	class UParticleSystem* OnDeathParticles;
+
+	// Text that will show the remaining HP of this destructable
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	class UTextRenderComponent* HealthText;
 public:	
 	// Sets default values for this actor's properties
 	ADestructable();
+
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerTakeDamage(float Damage);
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	// Amount of health for this actor
-	UPROPERTY(Replicated, EditAnywhere, Category = "Setup")
+	// Current amount of health
+	UPROPERTY(ReplicatedUsing = OnRep_Health)
 	float Health = 100.f;
 	
+	// Initial Amount of Health
+	UPROPERTY(EditAnywhere, Category = "Setup")
+	float InitialHealth = 100.f;
+
+	// Can we see health of given destructable or not
+	UPROPERTY(EditAnywhere, Category = "Setup")
+	bool bIsHealthVisible = true;
+
+	// Destroying the object and spawning destruction particles
+	UFUNCTION(NetMulticast, Reliable)
+	void SequenceDestroy();
+
+	UFUNCTION()
+	void OnRep_Health();
+
+
 	// Network Setup
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty> & OutLifetimeProps) const override;
 

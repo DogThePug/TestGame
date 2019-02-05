@@ -13,7 +13,7 @@ class ZADANIE_API APlayerCharacter : public ACharacter
 
 	// Static mesh for this character
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	class UStaticMeshComponent* StaticMesh;
+	class UStaticMeshComponent* DefaultMesh;
 public:
 	// Sets default values for this character's properties
 	APlayerCharacter();
@@ -73,7 +73,7 @@ private:
 	UFUNCTION()
 	void JumpReleased();
 
-	/// Interaction Begavior Setup
+	/// Interaction Behavior Setup
 	// Starting the interaction on the client side in order to send self as an interactor
 	UFUNCTION(Client, Reliable)
 	void ClientBeginInteract();
@@ -98,4 +98,8 @@ private:
 	UFUNCTION(Client, Reliable)
 	void ClientCheckHover();
 
+
+	/// Shooting Behavior Setup
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerShoot();
 };

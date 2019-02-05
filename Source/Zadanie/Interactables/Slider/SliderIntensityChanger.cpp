@@ -5,11 +5,14 @@
 
 void ASliderIntensityChanger::OnRep_SliderValue()
 {
-	for (auto Lamp : AffectedLamps)
+	if (Role == ROLE_Authority)
 	{
-		if (Lamp)
+		for (auto Lamp : AffectedLamps)
 		{
-			Lamp->ServerSetIntencityPercent(SliderValue);
+			if (Lamp)
+			{
+				Lamp->ServerSetIntencityPercent(SliderValue);
+			}
 		}
 	}
 }

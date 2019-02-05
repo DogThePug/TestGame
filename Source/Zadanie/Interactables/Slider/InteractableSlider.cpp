@@ -16,7 +16,7 @@ AInteractableSlider::AInteractableSlider()
 	PrimaryActorTick.bCanEverTick = true;
 
 	// Set default mesh 
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("StaticMesh'/Game/Meshes/SM_SliderBase.SM_SliderBase'"));
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("DefaultMesh'/Game/Meshes/SM_SliderBase.SM_SliderBase'"));
 	if (MeshAsset.Object)
 	{
 		DefaultMesh->SetStaticMesh(MeshAsset.Object);
@@ -24,7 +24,7 @@ AInteractableSlider::AInteractableSlider()
 
 	SliderMesh = CreateDefaultSubobject<UStaticMeshComponent>(FName("Slider"));
 	SliderMesh->SetupAttachment(RootComponent);
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> SliderMeshAsset(TEXT("StaticMesh'/Game/Meshes/SM_Slider1.SM_Slider1'"));
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> SliderMeshAsset(TEXT("DefaultMesh'/Game/Meshes/SM_Slider1.SM_Slider1'"));
 	
 	if (SliderMeshAsset.Object)
 	{
@@ -73,6 +73,9 @@ void AInteractableSlider::BeginPlay()
 
 		Start = GetActorRotation().RotateVector(Start);
 		End = GetActorRotation().RotateVector(End);
+
+		SliderValue = 0.f;
+		OnRep_SliderValue();
 	}
 }
 
@@ -144,8 +147,11 @@ void AInteractableSlider::OnRep_SliderWorldLocation()
 	// Set slider location
 	SliderMesh->SetWorldLocation(SliderWorldLocation);
 
-	// Calculate slider value
-	ServerCalculateSliderValue();
+	if (Role == ROLE_Authority)
+	{
+		// Calculate slider value
+		ServerCalculateSliderValue();
+	}
 }
 
 void AInteractableSlider::ServerCalculateSliderValue_Implementation()
