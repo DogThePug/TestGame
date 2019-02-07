@@ -80,13 +80,17 @@ AProjectile::AProjectile()
 	PMovementComp->InitialSpeed = Speed;
 	PMovementComp->ProjectileGravityScale = 0.f;
 	PMovementComp->bSimulationEnabled = true;
+	PMovementComp->bShouldBounce = false;
 }
 
 void AProjectile::NotifyHit(UPrimitiveComponent * MyComp, AActor * Other, UPrimitiveComponent * OtherComp, bool bSelfMoved, FVector HitLocation, FVector HitNormal, FVector NormalImpulse, const FHitResult & Hit)
 {
 	Super::NotifyHit(MyComp, Other, OtherComp, bSelfMoved, HitLocation, HitNormal, NormalImpulse, Hit);
 
-	ServerReactToCollision(Other);
+	if (Role == ROLE_Authority)
+	{
+		ServerReactToCollision(Other);
+	}
 }
 
 
