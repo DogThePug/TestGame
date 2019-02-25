@@ -82,7 +82,8 @@ void AInteractableButton::AddButtonToArray(AInteractableButton * Button)
 
 void AInteractableButton::ServerInteractPostCheck()
 {
-	if (!bIsToggled) // If not toggled
+	// Handling togling and effects
+	if (!bIsToggled)
 	{
 		// Untoggle all tied to buttons
 		for (auto TiedButton : TiedButtonsArray)
@@ -112,7 +113,7 @@ void AInteractableButton::ServerInteractPostCheck()
 	}
 	else
 	{
-		// untoggle if we can
+		// Untoggle if we can
 		if (bIsCheckable)
 		{
 			if (bCanBeToggledOff)
@@ -124,9 +125,10 @@ void AInteractableButton::ServerInteractPostCheck()
 	}
 }
 
-void AInteractableButton::SetToggledState(bool bVal)
+void AInteractableButton::SetToggledState(bool State)
 {
-	bIsToggled = bVal;
+	// Setting toggled state to another 
+	bIsToggled = State;
 	OnRep_IsToggled();
 }
 
@@ -158,6 +160,18 @@ void AInteractableButton::ButtonEffectOnUntoggle()
 	// ...
 }
 
+void AInteractableButton::ClientBeginHover()
+{
+	// Changing the material of default mesh to hovered materail
+	DefaultMesh->SetMaterial(0, HoveredMaterial);
+}
+
+void AInteractableButton::ClientEndHover()
+{
+	// Changing the material of default mesh to not hovered materail
+	DefaultMesh->SetMaterial(0, UnhoveredMaterial);
+}
+
 void AInteractableButton::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -165,14 +179,4 @@ void AInteractableButton::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 	DOREPLIFETIME(AInteractableButton, bIsToggled);
 	DOREPLIFETIME(AInteractableButton, TiedButtonsArray);
 	DOREPLIFETIME(AInteractableButton, bIsCheckable);
-}
-
-void AInteractableButton::ClientBeginHover()
-{
-	DefaultMesh->SetMaterial(0, HoveredMaterial);
-}
-
-void AInteractableButton::ClientEndHover()
-{
-	DefaultMesh->SetMaterial(0, UnhoveredMaterial);
 }

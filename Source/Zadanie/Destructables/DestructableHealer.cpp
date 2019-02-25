@@ -15,11 +15,13 @@
 
 ADestructableHealer::ADestructableHealer()
 {
+	// Setting up healing sphere
 	HealSphere = CreateDefaultSubobject<USphereComponent>(FName("ShareSphere"));
 	HealSphere->SetupAttachment(RootComponent);
 	HealSphere->SetGenerateOverlapEvents(true);
 	HealSphere->SetSphereRadius(HealRadius);
 
+	// Finding mesh asset and setting our default mesh to it
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("StaticMesh'/Game/Meshes/Attenuation_RoundedBox_01.Attenuation_RoundedBox_01'"));
 
 	if (MeshAsset.Object)
@@ -27,6 +29,7 @@ ADestructableHealer::ADestructableHealer()
 		DefaultMesh->SetStaticMesh(MeshAsset.Object);
 	}
 
+	// Finding material and setting material of our default mesh to it
 	static ConstructorHelpers::FObjectFinder<UMaterialInstance> MaterialAsset(TEXT("MaterialInstanceConstant'/Game/Materials/M_LayoutMat_Inst3.M_LayoutMat_Inst3'"));
 
 	if (MaterialAsset.Object)
@@ -34,6 +37,7 @@ ADestructableHealer::ADestructableHealer()
 		DefaultMesh->SetMaterial(0, MaterialAsset.Object);
 	}
 
+	// Finding particles that will be spawned when this destructable heals another 
 	static ConstructorHelpers::FObjectFinder<UParticleSystem> ParticlesAsset(TEXT("ParticleSystem'/Game/Particles/P_OnHealArc.P_OnHealArc'"));
 
 	if (ParticlesAsset.Object)
@@ -41,6 +45,7 @@ ADestructableHealer::ADestructableHealer()
 		ParticlesOnHeal = ParticlesAsset.Object;
 	}
 
+	// Setting health text relative position to visually match the size of mesh
 	HealthText->SetRelativeLocation(FVector(0.f, 11.f, 133.f));
 }
 
@@ -48,6 +53,7 @@ void ADestructableHealer::BeginPlay()
 {
 	Super::BeginPlay();
 
+	// Setting timer to start healing 
 	if (Role == ROLE_Authority)
 	{
 		GetWorldTimerManager().SetTimer(HealTimerHandle, this, &ADestructableHealer::HealDamage, HealTime, false);
@@ -57,6 +63,7 @@ void ADestructableHealer::BeginPlay()
 
 void ADestructableHealer::ServerSetHealRadius_Implementation(float Radius)
 {
+	// Setting current radius and changing healing volume to match
 	HealRadius = Radius;
 	HealSphere->SetSphereRadius(HealRadius);
 }
@@ -68,6 +75,7 @@ bool ADestructableHealer::ServerSetHealRadius_Validate(float Radius)
 
 void ADestructableHealer::ServerSetHealAmount_Implementation(float Amount)
 {
+	// Setting how much healing is done
 	HealAmount = FMath::Clamp(Amount, 0.f, 100.f);
 }
 
@@ -78,6 +86,7 @@ bool ADestructableHealer::ServerSetHealAmount_Validate(float Amount)
 
 void ADestructableHealer::ServerSetHealTime_Implementation(float Time)
 {
+	// Setting delay before heals
 	HealTime = Time;
 }
 
@@ -88,9 +97,11 @@ bool ADestructableHealer::ServerSetHealTime_Validate(float Time)
 
 void ADestructableHealer::HealDamage()
 {
+	// Find all overlapping actors in the vicinity of our healing volume
 	TArray<AActor*> OverlappingActors;
 	HealSphere->GetOverlappingActors(OverlappingActors);
 
+	// Filter out destructables
 	TArray<ADestructable*> DestructablesHit;
 	for (auto Actor : OverlappingActors)
 	{
@@ -101,6 +112,7 @@ void ADestructableHealer::HealDamage()
 		}
 	}
 
+	// Heal all destructibles in vicinity
 	if(DestructablesHit.Num() != 0)
 	{
 		for (auto Destructable : DestructablesHit)
@@ -111,12 +123,13 @@ void ADestructableHealer::HealDamage()
 		}
 	}
 
-
+	// Reset the timer
 	GetWorldTimerManager().SetTimer(HealTimerHandle, this, &ADestructableHealer::HealDamage, HealTime, false);
 }
 
 void ADestructableHealer::SpawnEmmiterTo_Implementation(ADestructable * Destructable)
 {
+	// Spawning emmiter and attaching it's beam source and target points
 	if (Destructable)
 	{
 		UParticleSystemComponent* ParticlesOnDamageHeal = UGameplayStatics::SpawnEmitterAttached(ParticlesOnHeal, RootComponent, NAME_None, GetActorLocation(), GetActorRotation());

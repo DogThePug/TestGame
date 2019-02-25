@@ -19,9 +19,12 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "FunctionalitySetup")
 	TArray<class AInteractableLamp*> AffectedLamps;
 
+	// Gradually changing color on affected lamps
 	virtual void OnRep_SliderValue();
 
+	// Calculating color basad on the current value of slider
 	void CalculateCurrentColor();
 
+	// Collor to be set
 	FLinearColor CurrentColor;
 };

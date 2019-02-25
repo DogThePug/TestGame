@@ -5,15 +5,17 @@
 
 void ASliderColorChanger::OnRep_SliderValue()
 {
-	// Calculating and changing color
+	// Calculating and changing color on all affected lamps
 	CalculateCurrentColor();
 
-	if(Role == ROLE_Authority)
-	for (auto Lamp : AffectedLamps)
+	if (Role == ROLE_Authority)
 	{
-		if (Lamp)
+		for (auto Lamp : AffectedLamps)
 		{
-			Lamp->ServerSetLightColor(CurrentColor);
+			if (Lamp)
+			{
+				Lamp->ServerSetLightColor(CurrentColor);
+			}
 		}
 	}
 }

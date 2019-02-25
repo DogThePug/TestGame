@@ -5,6 +5,7 @@
 #include "Player/PlayerHUD.h"
 AZadanieGameModeBase::AZadanieGameModeBase()
 {
+	// Setting up default pawn and HUD classes
 	DefaultPawnClass = APlayerCharacter::StaticClass();
 
 	HUDClass = APlayerHUD::StaticClass();

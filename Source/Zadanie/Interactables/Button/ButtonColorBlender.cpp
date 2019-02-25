@@ -7,6 +7,7 @@
 
 void AButtonColorBlender::ButtonEffectOnToggle()
 {
+	// Cycling through affected lamps and telling them to blend in the color
 	for (auto Lamp : AffectedLamps)
 	{
 		if (Lamp)
@@ -18,6 +19,7 @@ void AButtonColorBlender::ButtonEffectOnToggle()
 
 void AButtonColorBlender::ButtonEffectOnUntoggle()
 {
+	// Cycling through affected lamps and telling them to unblend the color
 	for (auto Lamp : AffectedLamps)
 	{
 		if (Lamp)

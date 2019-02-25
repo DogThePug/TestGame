@@ -7,7 +7,7 @@
 #include "SliderIntensityChanger.generated.h"
 
 /**
- *  Slider that changes intensity of a lamp
+ *  Slider that changes intensity of affected lamps
  */
 UCLASS()
 class ZADANIE_API ASliderIntensityChanger : public AInteractableSlider
@@ -19,5 +19,6 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "FunctionalitySetup")
 	TArray<class AInteractableLamp*> AffectedLamps;
 
+	// Cycling through lamps and changing their intensity
 	virtual void OnRep_SliderValue();
 };

@@ -7,7 +7,7 @@
 #include "InteractableButton.generated.h"
 
 /**
- * Base class for buttons. Buttons are used to interact and change properties with other interactables at a distance
+ * Base class for buttons. Buttons are used to interact and change properties with other actors at a distance
  */
 UCLASS()
 class ZADANIE_API AInteractableButton : public AInteractable
@@ -16,6 +16,9 @@ class ZADANIE_API AInteractableButton : public AInteractable
 
 protected:
 	AInteractableButton();
+
+	// Send invitations to tie to all the tied buttons on begin play
+	virtual void BeginPlay() override;
 
 	// Material that is applied to the mesh when it is toggled/activated
 	UPROPERTY(Category = "Materials", VisibleAnywhere, BlueprintReadOnly, meta = (BlueprintProtected = "true"))
@@ -29,16 +32,13 @@ protected:
 	UPROPERTY(Category = "Materials", VisibleAnywhere, BlueprintReadOnly, meta = (BlueprintProtected = "true"))
 	class UMaterial* HoveredMaterial;
 
-	// Material that is applied to the root mesh when it is unhovered over
+	// Material that is applied to the root mesh when it is not hovered over
 	UPROPERTY(Category = "Materials", VisibleAnywhere, BlueprintReadOnly, meta = (BlueprintProtected = "true"))
 	class UMaterial* UnhoveredMaterial;
 
-	// Button
+	// Button that will be a main visual guidence to determine if this interactable is toggled or not
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BlueprintProtected = "true"))
 	class UStaticMeshComponent* Button;
-
-	// Send invitations to tie to all the tied buttons on begin play
-	virtual void BeginPlay() override;
 
 	// Current state of a button
 	UPROPERTY(ReplicatedUsing = OnRep_IsToggled, Category = "FunctionalitySetup", EditAnywhere, meta = (BlueprintProtected = "true"))
@@ -52,20 +52,23 @@ protected:
 	UPROPERTY(Replicated, EditAnywhere, Category = "FunctionalitySetup")
 	bool bIsCheckable = true;
 
-	// Array of buttons to deactivate when we activate this one. Sends invitations to them, ensuring that when they are interacted with, this button gets untoggled
+	// Array of buttons to deactivate when we activate this one. Sends invitations to them, ensuring that when they are interacted with, this button gets untoggled as well
 	UPROPERTY(Replicated, Category = "FunctionalitySetup", EditAnywhere, meta = (BlueprintProtected = "true"))
 	TArray<AInteractableButton*> TiedButtonsArray;
 
-	// Virtual finction to be overriden by children to implement what this button does when toggled
+	// Virtual function to be overriden by children to implement what this button does when toggled
 	virtual void ButtonEffectOnToggle();
 
-	// Virtual finction to be overriden by children to implement what this button does when untoggled
+	// Virtual function to be overriden by children to implement what this button does when untoggled
 	virtual void ButtonEffectOnUntoggle();
 
 	// Network Setup
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty> & OutLifetimeProps) const override;
 
+	// Handles hovering over this interactable
 	virtual void ClientBeginHover() override;
+
+	// Handles unhovering over this interactable
 	virtual void ClientEndHover() override;
 
 public:

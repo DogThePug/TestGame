@@ -18,13 +18,9 @@ public:
 
 private:
 	// Door which this button is going to close/open
-	UPROPERTY(Replicated, Category = "FunctionalitySetup", EditAnywhere, meta = (BlueprintProtected = "true"))
+	UPROPERTY(Category = "FunctionalitySetup", EditAnywhere, meta = (BlueprintProtected = "true"))
 	class ARemoteDoor* AffectedDoor;
 
-	// Cycling through the lamps and changing their color
+	// Changing the state of door 
 	virtual void ButtonEffectOnToggle() override;
-
-	// Network Setup
-	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty> & OutLifetimeProps) const override;
-
 };

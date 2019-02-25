@@ -47,6 +47,7 @@ void ABlockedDoor::ReactOnBlockerDestroyed(ADestructable * Blocker)
 
 void ABlockedDoor::ServerConnectDoorBlocker_Implementation(ADestructable * Blocker)
 {
+	// Adding the blocker to the array and subscribing to the destruction event 
 	DoorBlockers.Add(Blocker);
 	Blocker->OnDestroyed.AddDynamic(this, &ABlockedDoor::ReactOnBlockerDestroyed);
 }

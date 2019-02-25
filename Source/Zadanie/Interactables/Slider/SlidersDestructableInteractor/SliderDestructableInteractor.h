@@ -15,11 +15,12 @@ class ZADANIE_API ASliderDestructableInteractor : public AInteractableSlider
 	GENERATED_BODY()
 
 public:
-	// Function that ties destructable to slider
+	// Handles tying of this slider to a destructable. See AShootingRangeVolume.
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerBindWithDestructable(class ADestructable* Destructable);
 
 protected:
+	// Destructable that we are currently tied with 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Setup")
 	class ADestructable* TiedDestructable;
 

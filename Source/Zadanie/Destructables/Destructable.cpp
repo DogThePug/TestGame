@@ -16,8 +16,10 @@
 // Sets default values
 ADestructable::ADestructable()
 {
+	// We need tick to align health text to the local player
 	PrimaryActorTick.bCanEverTick = true;
 
+	// Network setup
 	bReplicates = true;
 	bReplicateMovement = true;
 
@@ -66,22 +68,28 @@ void ADestructable::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	// Setting health equal to initial health
 	if (Role == ROLE_Authority)
 	{
 		Health = InitialHealth;
 	}
-
-	InitialMaterials = DefaultMesh->GetMaterials();
-
+	// Both server and client should refresh the text
 	OnRep_Health();
 
+
+	// Getting initial materials of the destructable to later properely apply damage material
+	InitialMaterials = DefaultMesh->GetMaterials();
+
+	// Check if health should be visible or not.
 	if (bIsHealthVisible)
 	{
+		// Set visibility to true and update relative transform of text to properely match during runtime
 		HealthText->SetVisibility(true);
 		HealthTextRelativePosition = HealthText->GetRelativeTransform().GetLocation();
 	}
 	else
 	{
+		// Destroy health text and deactivate tick because we don't need it if we don't show HP
 		HealthText->DestroyComponent();
 		SetActorTickEnabled(false);
 	}
@@ -89,6 +97,7 @@ void ADestructable::BeginPlay()
 
 void ADestructable::SequenceDestroy_Implementation()
 {
+	// Releasing particles on place of death before actually destroying the actor
 	if (OnDeathParticles)
 	{
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), OnDeathParticles, GetActorLocation(), GetActorRotation());
@@ -102,6 +111,7 @@ void ADestructable::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	// Aligning text to face towards local player
 	if (HealthText)
 	{
 		ClientAlignTextToFacePlayer();
@@ -109,6 +119,7 @@ void ADestructable::Tick(float DeltaTime)
 }
 void ADestructable::SequenceHurt_Implementation()
 {
+	// Finding the amount of materials on our actor to change them all to hurt material and back
 	int MaxIndex = InitialMaterials.Num(); 
 
 	// Change all materials to hurt material
@@ -146,6 +157,7 @@ void ADestructable::ClientAlignTextToFacePlayer_Implementation()
 
 void ADestructable::OnRep_Health()
 {
+	// Update health on text
 	if (HealthText)
 	{
 		// Making it so that our health shows with one precision point
@@ -157,6 +169,7 @@ void ADestructable::OnRep_Health()
 
 void ADestructable::ServerTakeDamage_Implementation(float Damage)
 {
+	// Decreasing health and checking if this destructable should be destroyed
 	Health -= Damage;
 	OnRep_Health();
 
@@ -166,6 +179,7 @@ void ADestructable::ServerTakeDamage_Implementation(float Damage)
 		SequenceDestroy();
 	}
 
+	// If wasn't destroyed, play hurt "animation"
 	SequenceHurt();
 }
 
@@ -176,6 +190,7 @@ bool ADestructable::ServerTakeDamage_Validate(float Damage)
 
 void ADestructable::ServerHealDamage_Implementation(float HealAmount)
 {
+	// Checking so that we don't go overboard with healing
 	if (Health + HealAmount >= InitialHealth)
 	{
 		Health = InitialHealth;
@@ -195,6 +210,7 @@ bool ADestructable::ServerHealDamage_Validate(float HealAmount)
 
 void ADestructable::ServerSetInitialHealth_Implementation(float HealthAmount)
 {
+	// Setting initial health and the current amount of health to what came in
 	InitialHealth = HealthAmount;
 	Health = InitialHealth;
 	OnRep_Health();

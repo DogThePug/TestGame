@@ -14,6 +14,6 @@ class ZADANIE_API AZadanieGameModeBase : public AGameModeBase
 {
 	GENERATED_BODY()
 
-		AZadanieGameModeBase();
+	AZadanieGameModeBase();
 
 };

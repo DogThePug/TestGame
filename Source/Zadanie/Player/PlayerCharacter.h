@@ -6,6 +6,9 @@
 #include "GameFramework/Character.h"
 #include "PlayerCharacter.generated.h"
 
+/**
+* Player Character with replicated movement setup, interaction setup and shooting setup.
+*/
 UCLASS()
 class ZADANIE_API APlayerCharacter : public ACharacter
 {
@@ -18,17 +21,14 @@ public:
 	// Sets default values for this character's properties
 	APlayerCharacter();
 
-	// Are we in the process of interacting with something
-	UPROPERTY(Replicated)
-	bool bIsInteracting = false;
+	// Called to bind functionality to input
+	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	// Pausing hover timer
-	void PauseHoverTimer();
+	// Break the interaction if we are too far away from the thing we are interacting with
+	virtual void Tick(float DeltaTime) override;
 
-	// Unpausing hover timer
-	void ContinueHoverTimer();
 protected:
-	// Called when the game starts or when spawned
+	// Starting the timer to check for hovering
 	virtual void BeginPlay() override;
 
 	// Timer that sends sweeps to find interactables
@@ -44,8 +44,15 @@ protected:
 	class AInteractable* PreviousTarget;
 
 public:	
-	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	// Are we in the process of interacting with something
+	UPROPERTY(Replicated)
+	bool bIsInteracting = false;
+
+	// Pausing hover timer
+	void PauseHoverTimer();
+
+	// Unpausing hover timer
+	void ContinueHoverTimer();
 
 	// Return inherited mesh of this character
 	UFUNCTION()
@@ -53,9 +60,6 @@ public:
 
 	// Network Setup
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty> & OutLifetimeProps) const override;
-
-	// Break the interaction if we are too far away from the thing we are interacting with
-	virtual void Tick(float DeltaTime) override;
 private: 
 	/// Movement Behavior Setup
 	// Handles moving forward/backward
@@ -86,7 +90,7 @@ private:
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerBeginInteract(APawn* Interactee);
 
-	// Engages interacting behavior from server
+	// Ends interacting behavior from server, releasing interactee from interactable
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerEndInteract(APawn* Interactee);
 
@@ -97,7 +101,6 @@ private:
 	// Tells an interactable that we had/have a focus on to change it's appearence for the client
 	UFUNCTION(Client, Reliable)
 	void ClientCheckHover();
-
 
 	/// Shooting Behavior Setup
 	UFUNCTION(Server, Reliable, WithValidation)

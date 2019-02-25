@@ -7,7 +7,7 @@
 #include "Interactable.generated.h"
 
 /**
-* Base class for all interactables
+*  Base class for all interactables. No functionality on it's own, only main framework for all interactables to use.
 */
 UCLASS()
 class ZADANIE_API AInteractable : public AActor
@@ -27,27 +27,31 @@ public:
 	// Sets default values for this actor's properties
 	AInteractable();
 
-	// Function that initialises interaction
+	// Handles initiation of interaction and further server calls
 	void Interact();
 	
 	// Function that ends interaction
 	void EndInteract();
 
+	// Handling when client begins to hover over this interactable
 	UFUNCTION(Client, Unreliable)
 	virtual void ClientBeginHover();
 
+	// Handling ending hovering over this interactable
 	UFUNCTION(Client, Unreliable)
 	virtual void ClientEndHover();
 
+	// Setting current interactee of this interactable
 	UFUNCTION(Client, Unreliable)
 	void ClientSetInteractee(class APawn* InteracteeToSet);
 
+	// Getting interaction sphere of this interactable. 
 	class USphereComponent* const GetInteractionSphere() const;
 protected:
-	// virtual function for children to implement interact behavior
+	// virtual function for children to implement interaction behavior
 	virtual void ServerInteractPostCheck();
 
-	// virtual function for children to implement interact behavior
+	// virtual function for children to implement interaction behavior
 	virtual void ServerEndInteractPostCheck();
 
 	// Network Setup
@@ -64,7 +68,4 @@ private:
 	// Function that executes on server when this object is interracted upon
 	UFUNCTION(Reliable, Server, WithValidation)
 	void ServerEndInteract();
-
-
-	
 };

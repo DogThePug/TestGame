@@ -7,7 +7,7 @@
 #include "DestructableHealer.generated.h"
 
 /**
- * 
+ *  Destructable that heals other destructables that are in the area of it's effect
  */
 UCLASS()
 class ZADANIE_API ADestructableHealer : public ADestructable
@@ -22,6 +22,7 @@ class ZADANIE_API ADestructableHealer : public ADestructable
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	class USphereComponent* HealSphere;
 public:
+	// Setting up default values
 	ADestructableHealer();
 
 	// Sets the radius at which the damage is shared
@@ -39,6 +40,7 @@ protected:
 	// Start a timer to heal every N seconds
 	virtual void BeginPlay();
 
+	// Timer handle that is used to loop the healing behavior
 	FTimerHandle HealTimerHandle;
 
 	// Function that finds destructables in vicinity and heals them

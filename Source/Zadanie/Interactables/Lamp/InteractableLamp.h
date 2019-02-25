@@ -20,13 +20,13 @@ class ZADANIE_API AInteractableLamp : public AInteractable
 	class UPointLightComponent* PointLight;
 
 public:
-	// Constructor
+	// Setting up default values and params
 	AInteractableLamp();
 
 	// Initiate starting state of the lamp
 	virtual void BeginPlay() override;
 
-	// 
+	//  Handles beggining and end of hovering
 	virtual void ClientBeginHover();
 	virtual void ClientEndHover();
 
@@ -48,12 +48,12 @@ public:
 
 	// Set Intencity (Brightness) of the lamp by %
 	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerSetIntencityPercent(float Percent);
+	void ServerSetIntensityPercent(float Percent);
 
 	// Get the state of light
 	bool IsLightOn() const;
 
-	
+	// Delegate to notify that the state of this lamp was changed
 	FOnLightStateChangeSignature OnStateChanged;
 protected:
 	// Implementing Interaction Functionality
@@ -65,9 +65,13 @@ protected:
 	// Network Setup
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty> & OutLifetimeProps) const override;
 
+	// Can player directly press on it to turn on/off
+	UPROPERTY(EditAnywhere, Category = "FunctionalitySetup")
+		bool bCanBeDirectlyInteractedWith = true;
+
 private: // Private variables
 
-	// Max Light Intencity
+	// Intensity that will be applied at full power
 	UPROPERTY(EditAnywhere, Category = "FunctionalitySetup")
 	float MaxLightIntensity = 700.f;
 
@@ -79,26 +83,24 @@ private: // Private variables
 	UPROPERTY(ReplicatedUsing = OnRep_LightIntensity)
 	float LightIntensity;
 
-	// Is the light on or not
-	bool bLightOn = true;
 
 	// Current color of the light
 	UPROPERTY(ReplicatedUsing = OnRep_LightColor)
 	FLinearColor LightColor;
-	
+
+	// Is the light on or not
+	bool bLightOn = true;
+
+	// Array of color that are used to blend and change the current color of lamp light
 	TArray<FLinearColor> ColorBlendArray;
+
 private: // Private methods
 
-	//Called on clients when server has changed intensity
+	// Called on clients when server has changed intensity
 	UFUNCTION()
 	void OnRep_LightIntensity();
 
 	// Called on clients when server has changed color
 	UFUNCTION()
 	void OnRep_LightColor();
-
-	// Can player directly press on it to turn on/off
-	UPROPERTY(EditAnywhere, Category = "FunctionalitySetup")
-	bool bCanBeDirectlyInteractedWith = true;
-
 };

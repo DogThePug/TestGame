@@ -7,6 +7,7 @@ void ASliderColorBlender::OnRep_SliderValue()
 {
 	if (Role == ROLE_Authority)
 	{
+		// Cycling through each affected lamp and telling it to unblend our previous collor and blend current
 		for (auto Lamp : AffectedLamps)
 		{
 			// Remove previous color from lamp blend

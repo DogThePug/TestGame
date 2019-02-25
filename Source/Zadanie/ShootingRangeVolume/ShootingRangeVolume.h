@@ -6,6 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "ShootingRangeVolume.generated.h"
 
+// Relations of destructable class that we will be spawning, relative transform where we will be spawning it and to which sliders we need to bind the destructable
 USTRUCT(Blueprintable)
 struct FDestructableToLocationSpawn
 {
@@ -33,7 +34,7 @@ class ZADANIE_API AShootingRangeVolume : public AActor
 {
 	GENERATED_BODY()
 	
-	// Box
+	// Volume that will remove everything destructable in it once reset
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	class UBoxComponent* VolumeBox;
 
@@ -48,10 +49,7 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	// Destructables that will spawn at given relative locations and with given sliders/interactables to tie them with
 	UPROPERTY(EditAnywhere, Category = "Setup")
 	TArray<FDestructableToLocationSpawn> DestructiblesToSpawnLocations;
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
 };

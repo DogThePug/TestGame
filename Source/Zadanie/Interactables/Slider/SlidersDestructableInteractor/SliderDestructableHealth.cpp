@@ -5,6 +5,7 @@
 
 void ASliderDestructableHealth::OnRep_SliderValue()
 {
+	// Setting the destructable health to the amount as calculated
 	if (Role == ROLE_Authority)
 	{
 		if (TiedDestructable)

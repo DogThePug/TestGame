@@ -14,9 +14,6 @@
 
 #include "UnrealNetwork.h"
 
-#include <EngineGlobals.h>
-#include <Runtime/Engine/Classes/Engine/Engine.h>
-
 // Sets default values
 APlayerCharacter::APlayerCharacter()
 {
@@ -26,7 +23,7 @@ APlayerCharacter::APlayerCharacter()
 	// Replication
 	bReplicates = true;
 
-	// Seting and configuring static mesh
+	// Seting and configuring default mesh
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("/Game/Meshes/SM_MaterialSphere"));
 
 	DefaultMesh = CreateDefaultSubobject<UStaticMeshComponent>(FName("Mesh"));
@@ -66,6 +63,7 @@ void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	// Starting timer for hover behavior
 	if (Role == ROLE_Authority)
 	{
 		GetWorldTimerManager().SetTimer(HoverTimerHandle, this, &APlayerCharacter::ClientCheckHover, 1.f/30.f, true);
@@ -122,22 +120,13 @@ void APlayerCharacter::MoveRight(float Val)
 
 void APlayerCharacter::JumpPressed()
 {
+	// Handling jumping
 	bPressedJump = true;
 }
 
 void APlayerCharacter::JumpReleased()
 {
 	bPressedJump = false;
-}
-
-void APlayerCharacter::ClientBeginInteract_Implementation()
-{
-	ServerBeginInteract(this);
-}
-
-void APlayerCharacter::ClientEndInteract_Implementation()
-{
-	ServerEndInteract(this);
 }
 
 
@@ -206,6 +195,17 @@ bool APlayerCharacter::ServerBeginHover_Validate()
 	return true;
 }
 
+void APlayerCharacter::ClientBeginInteract_Implementation()
+{
+	// Telling the server that local player wants to interact
+	ServerBeginInteract(this);
+}
+
+void APlayerCharacter::ClientEndInteract_Implementation()
+{
+	// Telling the server that local player wants to end interacting
+	ServerEndInteract(this);
+}
 
 void APlayerCharacter::ServerBeginInteract_Implementation(APawn* Interactee)
 {
@@ -256,14 +256,31 @@ bool APlayerCharacter::ServerEndInteract_Validate(APawn* Interactee)
 
 void APlayerCharacter::PauseHoverTimer()
 {
+	// Pausing hover timer when we interact in order to not hover anything else when we are in the process of interacting
 	GetWorldTimerManager().PauseTimer(HoverTimerHandle);
 }
 
 void APlayerCharacter::ContinueHoverTimer()
 {
-
-
+	// Continuing hover timer when we no longer interact
 	GetWorldTimerManager().UnPauseTimer(HoverTimerHandle);
+}
+
+void APlayerCharacter::ServerShoot_Implementation()
+{
+	// Finding forward rotation through local controller and spawning a projectile
+	FVector CamLoc;
+	FRotator CamRot;
+	Controller->GetPlayerViewPoint(CamLoc, CamRot);
+	const FVector StartTrace = CamLoc;
+	const FVector ShootDir = CamRot.Vector();
+	
+	GetWorld()->SpawnActor<AProjectile>(GetActorLocation() + ShootDir * 80.f + FVector(0.f,0.f,52.f), CamRot);
+}
+
+bool APlayerCharacter::ServerShoot_Validate()
+{
+	return true;
 }
 
 UStaticMeshComponent * APlayerCharacter::GetStaticMesh() const
@@ -278,20 +295,4 @@ void APlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 	DOREPLIFETIME(APlayerCharacter, HoverTimerHandle);
 	DOREPLIFETIME(APlayerCharacter, CurrentTarget);
 	DOREPLIFETIME(APlayerCharacter, PreviousTarget);
-}
-
-void APlayerCharacter::ServerShoot_Implementation()
-{
-	FVector CamLoc;
-	FRotator CamRot;
-	Controller->GetPlayerViewPoint(CamLoc, CamRot);
-	const FVector StartTrace = CamLoc;
-	const FVector ShootDir = CamRot.Vector();
-	
-	GetWorld()->SpawnActor<AProjectile>(GetActorLocation() + ShootDir * 80.f + FVector(0.f,0.f,52.f), CamRot);
-}
-
-bool APlayerCharacter::ServerShoot_Validate()
-{
-	return true;
 }

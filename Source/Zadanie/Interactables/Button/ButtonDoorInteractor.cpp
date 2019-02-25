@@ -6,19 +6,16 @@
 
 AButtonDoorInteractor::AButtonDoorInteractor()
 {
+	// Making this button uncheckable and untoglable
 	bIsCheckable = false;
 	bCanBeToggledOff = false;
 }
 
 void AButtonDoorInteractor::ButtonEffectOnToggle()
 {
+	// Initiating the state change on door
 	if (AffectedDoor)
 	{
 		AffectedDoor->ServerInitiateStateChange();
 	}
-}
-
-void AButtonDoorInteractor::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
-{
-	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 }

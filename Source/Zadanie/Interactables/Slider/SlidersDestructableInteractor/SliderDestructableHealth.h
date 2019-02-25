@@ -7,7 +7,7 @@
 #include "SliderDestructableHealth.generated.h"
 
 /**
- * 
+ *  Slider that changes the amount of health on the destructable, depending on the slider value and given range.
  */
 UCLASS()
 class ZADANIE_API ASliderDestructableHealth : public ASliderDestructableInteractor

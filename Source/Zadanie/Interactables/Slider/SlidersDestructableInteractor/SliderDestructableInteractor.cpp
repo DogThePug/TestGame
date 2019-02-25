@@ -3,9 +3,9 @@
 #include "SliderDestructableInteractor.h"
 #include "Destructables/Destructable.h"
 
-
 void ASliderDestructableInteractor::ServerBindWithDestructable_Implementation(ADestructable* Destructable)
 {
+	// Tying to the given destructable and force calling the slider change
 	if (Destructable)
 	{
 		TiedDestructable = Destructable;

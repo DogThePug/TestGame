@@ -6,6 +6,9 @@
 #include "GameFramework/Actor.h"
 #include "Projectile.generated.h"
 
+/**
+* Simple projectile class with replicated behavior. It is not expandable, as it was not needed in the context of this project.
+*/
 UCLASS()
 class ZADANIE_API AProjectile : public AActor
 {
@@ -30,6 +33,7 @@ public:
 	// Sets default values for this actor's properties
 	AProjectile();
 
+	// Reacting to collision on server side
 	virtual void NotifyHit
 	(
 		class UPrimitiveComponent * MyComp,
@@ -42,30 +46,18 @@ public:
 		const FHitResult & Hit
 	) override;
 
-protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-
+private:
 	// Reacting to something that we have collided with
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerReactToCollision(AActor* CollisionActor);
 
 	// Spawning particles when we hit something
 	UFUNCTION(NetMulticast, Reliable)
-	void SpawnHitParticles();
+	void NetMulticastSpawnHitParticles();
 
 	// Damage that this projectile does
 	float Damage = 20.f;
 	
 	// Projectile Speed
 	float Speed = 2300.f;
-
-	// Network Setup
-	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty> & OutLifetimeProps) const override;
-
-	
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
 };

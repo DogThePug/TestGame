@@ -52,6 +52,7 @@ void ADoorBlocker::BeginPlay()
 {
 	Super::BeginPlay();
 
+	// Notifying our door that we are blocking it
 	if (Role == ROLE_Authority)
 	{
 		if (BlockedDoor)

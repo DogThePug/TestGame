@@ -6,9 +6,9 @@
 
 void AButtonLampInteractor::ButtonEffectOnToggle()
 {
+	// Cycling through affected lamps and indirectly interacting with them
 	for (auto Lamp : AffectedLamps)
 	{
-		// Interact with lamp
 		if (Lamp)
 		{
 			Lamp->IndirectInteract();
@@ -16,9 +16,4 @@ void AButtonLampInteractor::ButtonEffectOnToggle()
 	}
 }
 
-void AButtonLampInteractor::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
-{
-	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME(AButtonLampInteractor, AffectedLamps);
-}

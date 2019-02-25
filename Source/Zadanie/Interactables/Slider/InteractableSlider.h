@@ -7,7 +7,7 @@
 #include "InteractableSlider.generated.h"
 
 /**
- *  Base class for sliders. Does nothing to the world on it's own, except for having a slider-like behavior
+ *  Base class for sliders. Does nothing to the world on it's own, except for having a slider-like behavior.
  */
 UCLASS()
 class ZADANIE_API AInteractableSlider : public AInteractable
@@ -15,10 +15,11 @@ class ZADANIE_API AInteractableSlider : public AInteractable
 	GENERATED_BODY()
 
 public:
+	// Initial setup
 	AInteractableSlider();
 
 protected:
-	// Slider Mesh
+	// Slider Mesh that will be moving when we interact
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BlueprintProtected = "true"))
 	class UStaticMeshComponent* SliderMesh;
 
@@ -39,6 +40,7 @@ private:
 	UPROPERTY(Replicated)
 	FVector End;
 
+	// Using this variable to set world location of a slider
 	UPROPERTY(ReplicatedUsing = OnRep_SliderWorldLocation)
 	FVector SliderWorldLocation;
 
@@ -54,19 +56,18 @@ private:
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerCalculateSliderPosition();
 
-	// Function that looks at the relative position of a slider from the start and translates it to percent value
+	// Calculating the relative position of a slider from the start and translates it to percent value
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerCalculateSliderValue();
 
 	// Network Setup
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty> & OutLifetimeProps) const override;
-
 protected:
 	// Current value of slider in %
 	UPROPERTY(ReplicatedUsing = OnRep_SliderValue)
 	float SliderValue = 0.f;
 
-	// Calculate position where the slider should be
+	// Calculate position where the slider should be, if we are interacting
 	virtual void Tick(float DeltaTime) override;
 
 	// Setting initial state and parameters
@@ -74,11 +75,13 @@ protected:
 
 	// Setting highlight on the slider
 	virtual void ClientBeginHover() override;
+
 	// Removing highlight from the slider
 	virtual void ClientEndHover() override;
 
 	// Starting interaction
 	virtual void ServerInteractPostCheck();
+
 	// Ending interation
 	virtual void ServerEndInteractPostCheck();
 

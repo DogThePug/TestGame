@@ -18,7 +18,7 @@ public:
 	AButtonColorChanger();
 
 protected:
-	// Array of lamps that we interract with upon toggling
+	// Array of lamps that this button will interract with
 	UPROPERTY(Replicated, Category = "FunctionalitySetup", EditAnywhere, meta = (BlueprintProtected = "true"))
 	TArray<class AInteractableLamp*> AffectedLamps;
 

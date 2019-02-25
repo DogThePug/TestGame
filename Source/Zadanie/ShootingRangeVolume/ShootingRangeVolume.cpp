@@ -11,8 +11,10 @@ AShootingRangeVolume::AShootingRangeVolume()
 {
 	PrimaryActorTick.bCanEverTick = false;
 
+	// Network setup
 	bReplicates = true;
 
+	// Setting up volume
 	VolumeBox = CreateDefaultSubobject<UBoxComponent>(FName("Box"));
 	RootComponent = VolumeBox;
 	VolumeBox->SetGenerateOverlapEvents(true);
@@ -23,22 +25,13 @@ void AShootingRangeVolume::BeginPlay()
 {
 	Super::BeginPlay();
 	
-
-
+	// Starting the timer to reset the field right away after game start
 	if (Role == ROLE_Authority)
 	{
 		FTimerHandle TimerHandle;
 
 		GetWorldTimerManager().SetTimer(TimerHandle, this, &AShootingRangeVolume::ServerResetField, 0.1f, false);
 	}
-}
-
-// Called every frame
-void AShootingRangeVolume::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-
 }
 
 void AShootingRangeVolume::ServerResetField_Implementation()
@@ -58,7 +51,7 @@ void AShootingRangeVolume::ServerResetField_Implementation()
 			}
 		}
 
-		// Spawn all destructables from the list 
+		// Spawn all destructables from the list with the appropriate transforms
 		for (FDestructableToLocationSpawn DestructableToSpawnLocation : DestructiblesToSpawnLocations)
 		{
 			if (DestructableToSpawnLocation.Destructable)

@@ -11,6 +11,7 @@
 
 AShrinkingDestructable::AShrinkingDestructable()
 {
+	// Setting mesh and materials on default mesh
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("StaticMesh'/Game/Meshes/SM_Shape_Cube.SM_Shape_Cube'"));
 
 	if (MeshAsset.Object)
@@ -27,11 +28,14 @@ AShrinkingDestructable::AShrinkingDestructable()
 		HealthyMaterial = MaterialAsset.Object;
 	}
 
+	// Setting scale to initial
 	DefaultMesh->SetWorldScale3D(InitialScale);
 
+	// Aligning initial position of the health text to better match the size of mesh
 	HealthText->SetRelativeLocation(FVector(0.f, 11.f, 133.f));
 
 
+	// Setting up slightly hurt and badly injured materials
 	static ConstructorHelpers::FObjectFinder<UMaterialInstance> SlightlyHurtMaterialAsset(TEXT("MaterialInstanceConstant'/Game/Materials/M_ShrinkableDestructable_Inst.M_ShrinkableDestructable_Inst'"));
 
 	if (SlightlyHurtMaterialAsset.Object)
@@ -49,6 +53,7 @@ AShrinkingDestructable::AShrinkingDestructable()
 
 void AShrinkingDestructable::ServerSetInitialScale_Implementation(FVector Scale)
 {
+	// Changing the scale and applying it
 	InitialScale = Scale;
 	OnRep_InitialScale();
 }
@@ -59,6 +64,7 @@ bool AShrinkingDestructable::ServerSetInitialScale_Validate(FVector Scale)
 }
 void AShrinkingDestructable::OnRep_InitialScale()
 {
+	// Forwarding the calculation of scale
 	SetScaleBasedOnMissingHealth();
 }
 
@@ -71,6 +77,7 @@ void AShrinkingDestructable::SetScaleBasedOnMissingHealth()
 
 void AShrinkingDestructable::SetMaterialBasedOnMissingHealth()
 {
+	// Determining which material should be applied based on missing health
 	if (Health / InitialHealth >= 0.7f)
 	{
 		if (InitialMaterials.Num() != 0)
@@ -99,13 +106,12 @@ void AShrinkingDestructable::SetMaterialBasedOnMissingHealth()
 
 void AShrinkingDestructable::OnRep_Health()
 {
+	// After the damage was dealt, update material and scale
 	Super::OnRep_Health();
 
 	SetScaleBasedOnMissingHealth();
 
-
 	SetMaterialBasedOnMissingHealth();
-	
 }
 
 void AShrinkingDestructable::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

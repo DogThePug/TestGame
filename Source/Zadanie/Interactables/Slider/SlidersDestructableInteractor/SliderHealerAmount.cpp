@@ -7,6 +7,7 @@ void ASliderHealerAmount::OnRep_SliderValue()
 {
 	if (Role == ROLE_Authority)
 	{
+		// Changing the amount of health healed by healer destructable
 		ADestructableHealer* DamageHealer = Cast<ADestructableHealer>(TiedDestructable);
 		if (DamageHealer)
 		{

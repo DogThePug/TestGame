@@ -13,7 +13,7 @@ AInteractable::AInteractable()
  	// Disabling tick
 	PrimaryActorTick.bCanEverTick = false;
 
-	// Replication
+	// Network setup
 	bReplicates = true;
 	
 	// Default mesh setup
@@ -33,7 +33,7 @@ AInteractable::AInteractable()
 
 void AInteractable::Interact()
 {
-	// Ask a server to interract, for safety purposes
+	// Forwarding a call to server
 	ServerInteract();
 }
 
@@ -43,14 +43,14 @@ void AInteractable::EndInteract()
 	ServerEndInteract();
 }
 
-void AInteractable::ClientBeginHover_Implementation()
-{
 
-}
-
-void AInteractable::ClientEndHover_Implementation()
+void AInteractable::ServerInteract_Implementation()
 {
-	
+	if (Role == ROLE_Authority)
+	{
+		// Forwarding the call to overridable function
+		ServerInteractPostCheck();
+	}
 }
 
 bool AInteractable::ServerInteract_Validate()
@@ -58,24 +58,34 @@ bool AInteractable::ServerInteract_Validate()
 	return true;
 }
 
-void AInteractable::ServerInteract_Implementation()
+void AInteractable::ServerEndInteract_Implementation()
 {
-	// Checking if we trully are the server
 	if (Role == ROLE_Authority)
 	{
-		ServerInteractPostCheck();
+		// Forwarding the call to overridable function
+		ServerEndInteractPostCheck();
 	}
 }
 
+bool AInteractable::ServerEndInteract_Validate()
+{
+	return true;
+}
 
 void AInteractable::ClientSetInteractee_Implementation(APawn * InteracteeToSet)
 {
+	// Setting pawn that currently interacts with this interactable
 	Interactee = InteracteeToSet;
 }
 
-USphereComponent * const AInteractable::GetInteractionSphere() const
+void AInteractable::ClientBeginHover_Implementation()
 {
-	return InteractionSphere;
+	// ...
+}
+
+void AInteractable::ClientEndHover_Implementation()
+{
+	// ...
 }
 
 void AInteractable::ServerInteractPostCheck()
@@ -88,25 +98,16 @@ void AInteractable::ServerEndInteractPostCheck()
 	// ...
 }
 
+USphereComponent * const AInteractable::GetInteractionSphere() const
+{
+	return InteractionSphere;
+}
+
 void AInteractable::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(AInteractable, Interactee);
 }
-
-void AInteractable::ServerEndInteract_Implementation()
-{
-	if (Role == ROLE_Authority)
-	{
-		ServerEndInteractPostCheck();
-	}
-}
-
-bool AInteractable::ServerEndInteract_Validate()
-{
-	return true;
-}
-
 
 

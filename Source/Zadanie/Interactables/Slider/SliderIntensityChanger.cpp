@@ -7,11 +7,12 @@ void ASliderIntensityChanger::OnRep_SliderValue()
 {
 	if (Role == ROLE_Authority)
 	{
+		// Cycle through all the affected lamps and set their intensity
 		for (auto Lamp : AffectedLamps)
 		{
 			if (Lamp)
 			{
-				Lamp->ServerSetIntencityPercent(SliderValue);
+				Lamp->ServerSetIntensityPercent(SliderValue);
 			}
 		}
 	}
